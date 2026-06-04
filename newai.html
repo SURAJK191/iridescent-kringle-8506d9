@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Mint AI — Smart Reminder Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: #0a0c12;
+    font-family: 'Inter', sans-serif;
+    color: #f1f5f9;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 90px;
+    position: relative;
+  }
+
+  .page {
+    display: none;
+    padding: 20px 18px;
+    animation: fadeUp 0.3s ease;
+  }
+  .page.active {
+    display: block;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Mint fresh theme */
+  :root {
+    --mint: #2dd4bf;
+    --mint-dark: #14b8a6;
+    --mint-glow: rgba(45,212,191,0.2);
+    --dark-card: #11151f;
+    --dark-elevated: #1a1f2e;
+    --gray-muted: #8b95b0;
+    --border-light: rgba(45,212,191,0.15);
+  }
+
+  /* ========= HOME PAGE SPECIFIC STYLES (clean like reference) ========= */
+  .home-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+  .greet h1 {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ffffff, #a5f3e8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.3px;
+  }
+  .greet p {
+    color: var(--gray-muted);
+    font-size: 13px;
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  .profile-icon {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border-radius: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--mint);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+    border: 1px solid var(--border-light);
+  }
+
+  /* card style matching reference image */
+  .reminder-card-row {
+    background: var(--dark-card);
+    border-radius: 28px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    border: 1px solid var(--border-light);
+    backdrop-filter: blur(2px);
+  }
+  .reminder-card-row:hover {
+    border-color: var(--mint);
+    background: #131a27;
+  }
+  .reminder-left-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .reminder-icon-bubble {
+    width: 52px;
+    height: 52px;
+    background: linear-gradient(135deg, #2dd4bf20, #0f172a);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--mint);
+  }
+  .reminder-text h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .reminder-text p {
+    font-size: 12px;
+    color: var(--gray-muted);
+  }
+  .reminder-time-badge {
+    color: var(--mint);
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(45,212,191,0.12);
+    padding: 6px 12px;
+    border-radius: 40px;
+    letter-spacing: 0.3px;
+  }
+
+  .section-header-clean {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    margin-top: 8px;
+  }
+  .section-header-clean h2 {
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e2e8f0;
+  }
+  .section-header-clean a {
+    color: var(--mint);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  /* 3 stats card exactly like reference layout */
+  .stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0 20px;
+  }
+  .stat-mint-card {
+    background: var(--dark-card);
+    border-radius: 28px;
+    padding: 16px 8px;
+    text-align: center;
+    border: 1px solid var(--border-light);
+    transition: 0.2s;
+  }
+  .stat-mint-card i {
+    font-size: 26px;
+    color: var(--mint);
+    opacity: 0.9;
+  }
+  .stat-mint-card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 10px 0 4px;
+    color: white;
+  }
+  .stat-mint-card p {
+    font-size: 11px;
+    color: var(--gray-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+  }
+
+  .ai-card-minimal {
+    background: linear-gradient(115deg, #0e1622, #0b0f17);
+    border-radius: 28px;
+    padding: 18px 20px;
+    margin-top: 10px;
+    border-left: 3px solid var(--mint);
+  }
+  .ai-card-minimal h3 {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .ai-card-minimal p {
+    font-size: 13px;
+    color: #b9c3e0;
+    line-height: 1.45;
+  }
+
+  /* other pages (reminders, tracker, profile) remain beautiful */
+  .glass-card {
+    background: rgba(17, 21, 31, 0.95);
+    backdrop-filter: blur(2px);
+    border-radius: 32px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 12px 28px -8px rgba(0,0,0,0.4);
+  }
+  .btn-primary {
+    background: linear-gradient(95deg, #1f988b, #2dd4bf);
+    border: none;
+    width: 100%;
+    padding: 14px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 15px;
+    color: #0a0c12;
+    margin-top: 24px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .reminder-history-item {
+    background: #0f141f;
+    border-radius: 24px;
+    padding: 18px;
+    margin-bottom: 12px;
+    border-left: 4px solid #2dd4bf;
+  }
+  .test-btn, .delete-btn {
+    padding: 8px;
+    border-radius: 28px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+  }
+  .test-btn { background: #2dd4bf20; color: #2dd4bf; border: 1px solid #2dd4bf40; }
+  .delete-btn { background: #ef444420; color: #f87171; border: 1px solid #ef444440; }
+  .card-buttons { display: flex; gap: 12px; margin-top: 14px; }
+  .bottom-nav {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 440px;
+    background: #0f141fe6;
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 12px;
+    border-radius: 44px;
+    border: 1px solid var(--border-light);
+    z-index: 1000;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    color: #8b95b0;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .nav-item i { font-size: 20px; margin-bottom: 4px; }
+  .nav-item.active { color: #2dd4bf; text-shadow: 0 0 4px #2dd4bf60; }
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #2a3448;
+    border-radius: 34px;
+    transition: 0.2s;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+  }
+  input:checked + .slider { background-color: #2dd4bf; }
+  input:checked + .slider:before { transform: translateX(20px); }
+  .popup-alert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+  }
+  .popup-card {
+    background: #11151f;
+    border-radius: 48px;
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 320px;
+    text-align: center;
+    border: 1px solid #2dd4bf;
+  }
+  .done-badge { font-size: 11px; background: #2dd4bf20; color: #2dd4bf; padding: 4px 10px; border-radius: 40px; display: inline-block; margin-top: 8px; }
+  .time-row { display: flex; gap: 12px; }
+  input, select { width: 100%; padding: 12px 14px; background: #0f141f; border: 1px solid #2a3448; border-radius: 20px; color: white; }
+</style>
+</head>
+<body>
+
+<div class="popup-alert" id="popupMint">
+  <div class="popup-card">
+    <h2><i class="fa-regular fa-bell"></i> Mint AI</h2>
+    <p id="popupMessage" style="font-size: 18px; font-weight: 500;">Reminder</p>
+    <button onclick="dismissAll()" style="background:#2dd4bf; border:none; padding:12px 20px; border-radius:40px; margin-top:20px; font-weight:bold;">Got it</button>
+  </div>
+</div>
+
+<!-- HOME PAGE - redesigned like reference image -->
+<div class="page active" id="homePage">
+  <div class="home-top">
+    <div class="greet">
+      <h1>Good Morning 👋</h1>
+      <p>Stay productive and focused.</p>
+    </div>
+    <div class="profile-icon"><i class="fa-regular fa-user"></i></div>
+  </div>
+
+  <!-- Reminders section exactly like "Reminders | View All" layout -->
+  <div class="section-header-clean">
+    <h2><i class="fa-regular fa-bell"></i> Reminders</h2>
+    <a href="#" onclick="showPage('remPage', document.querySelectorAll('.nav-item')[1])">View All</a>
+  </div>
+  <div id="homeRemindersList">
+    <!-- dynamic reminders appear here exactly like Study Session / Workout style -->
+  </div>
+
+  <!-- Tracker Stats Card: 2h | 92% | 5 -->
+  <div class="section-header-clean" style="margin-top: 8px;">
+    <h2><i class="fa-regular fa-chart-line"></i> Tracker</h2>
+  </div>
+  <div class="stats-dashboard">
+    <div class="stat-mint-card"><i class="fa-regular fa-clock"></i><h3 id="focusHours">0h</h3><p>Focus</p></div>
+    <div class="stat-mint-card"><i class="fa-regular fa-bullseye"></i><h3 id="productivityPercent">92%</h3><p>Productive</p></div>
+    <div class="stat-mint-card"><i class="fa-regular fa-circle-check"></i><h3 id="tasksDoneCount">0</h3><p>Done</p></div>
+  </div>
+
+  <!-- AI Suggestion Box minimal -->
+  <div class="ai-card-minimal">
+    <h3><i class="fa-regular fa-brain"></i> AI Suggestions</h3>
+    <p id="aiSuggestionText">You are most productive between 9AM – 12PM. Reduce social media usage at night.</p>
+  </div>
+</div>
+
+<!-- REMINDERS PAGE (works perfectly) -->
+<div class="page" id="remPage">
+  <div class="glass-card">
+    <h2><i class="fa-regular fa-bell"></i> Set Reminder</h2>
+    <label>Task Detail</label><input type="text" id="taskName" placeholder="Enter task...">
+    <label>Time</label>
+    <div class="time-row"><select id="remHour"></select><select id="remMinute"></select><select id="ampmSel"><option>AM</option><option>PM</option></select></div>
+    <label>Date (Optional)</label><input type="date" id="remDate">
+    <label>Repeat Mode</label><select id="repeatMode"><option value="once">Once Only</option><option value="daily">Daily Repeat</option></select>
+    <div class="toggle-row" style="display:flex; justify-content:space-between; background:#0f141f; padding:12px 16px; border-radius:22px; margin:16px 0;"><span>Until Off (Voice Loop)</span><label class="switch"><input type="checkbox" id="voiceLoopSwitch"><span class="slider"></span></label></div>
+    <label>AI Voice</label><select id="voiceGender"><option value="female">Female AI Voice</option><option value="male">Male AI Voice</option></select>
+    <button class="btn-primary" onclick="createReminder()"><i class="fa-regular fa-bolt"></i> Activate Reminder</button>
+  </div>
+  <div id="reminderListContainer"></div>
+</div>
+
+<!-- TRACKER PAGE (same robust) -->
+<div class="page" id="trackPage">
+  <div class="glass-card">
+    <h2><i class="fa-regular fa-stopwatch"></i> Focus Tracker</h2>
+    <label>Session Limit</label><select id="focusDuration"><option value="5">5 Seconds (Demo)</option><option value="1800">30 Minutes</option><option value="3600">1 Hour</option></select>
+    <div class="toggle-row" style="display:flex; justify-content:space-between; background:#0f141f; padding:12px 16px; border-radius:22px; margin:16px 0;"><span>AI Motivational Coach</span><label class="switch"><input type="checkbox" id="motivationToggle" checked><span class="slider"></span></label></div>
+    <button class="btn-primary" onclick="startFocusSession()"><i class="fa-regular fa-play"></i> Start Focus Session</button>
+    <p id="trackerStatusMsg" style="margin-top:15px; color:#2dd4bf;"></p>
+  </div>
+</div>
+
+<!-- PROFILE PAGE -->
+<div class="page" id="profilePage">
+  <div class="glass-card" style="text-align:center;">
+    <div class="profile-icon" style="margin:0 auto 16px; width:70px; height:70px; font-size:32px;"><i class="fa-regular fa-user"></i></div>
+    <h2>User Profile</h2>
+    <p style="color:var(--gray-muted);">Premium Smart AI Reminder User</p>
+    <div style="margin-top:25px; text-align:left;"><p>🎤 AI Voice Enabled</p><br><p>🌙 Dark Theme Active</p><br><p>🔔 Smart Notifications ON</p></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="showPage('homePage', this)"><i class="fa-regular fa-house"></i><span>Home</span></div>
+  <div class="nav-item" onclick="showPage('remPage', this)"><i class="fa-regular fa-bell"></i><span>Reminders</span></div>
+  <div class="nav-item" onclick="showPage('trackPage', this)"><i class="fa-regular fa-chart-line"></i><span>Tracker</span></div>
+  <div class="nav-item" onclick="showPage('profilePage', this)"><i class="fa-regular fa-user"></i><span>Profile</span></div>
+</div>
+
+<script>
+  // ---------- DATA ----------
+  let reminders = [];
+  let activeReminderId = null;
+  let voiceLoopInterval = null;
+  let focusTimer = null;
+  let focusActive = false;
+  const synth = window.speechSynthesis;
+
+  // populate hour/minute selects
+  function populateSelects() {
+    const hourSel = document.getElementById('remHour');
+    if(hourSel) for(let i=1;i<=12;i++) hourSel.innerHTML += `<option>${i.toString().padStart(2,'0')}</option>`;
+    const minSel = document.getElementById('remMinute');
+    if(minSel) for(let i=0;i<60;i++) minSel.innerHTML += `<option>${i.toString().padStart(2,'0')}</option>`;
+  }
+  populateSelects();
+
+  // Helper: update stats UI for home
+  function updateStatsUI() {
+    const today = new Date().toISOString().split('T')[0];
+    const doneToday = reminders.filter(r => r.doneToday === true && (r.repeat === 'daily' ? true : (r.date === today))).length;
+    document.getElementById('tasksDoneCount').innerText = doneToday;
+    let focusHrs = localStorage.getItem('mintFocusMinutes') || "0";
+    document.getElementById('focusHours').innerText = parseFloat(focusHrs).toFixed(0) + "h";
+    document.getElementById('productivityPercent').innerText = "92%";
+    const hourNow = new Date().getHours();
+    if(hourNow < 12) document.getElementById('aiSuggestionText').innerText = "You are most productive between 9AM – 12PM. Reduce social media usage at night.";
+    else if(hourNow < 17) document.getElementById('aiSuggestionText').innerText = "Afternoon dip? Mint AI suggests a 5-min stretch & hydration reminder.";
+    else document.getElementById('aiSuggestionText').innerText = "Evening focus window closed — prepare tomorrow's reminders now.";
+  }
+
+  function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  function renderAllReminders() {
+    const container = document.getElementById('reminderListContainer');
+    if(container) {
+      if(reminders.length === 0) container.innerHTML = `<div style="background:#0f141f; border-radius:28px; padding:24px; text-align:center;">✨ No reminders. Create a mint reminder ✨</div>`;
+      else {
+        container.innerHTML = reminders.map(rem => `
+          <div class="reminder-history-item">
+            <div><strong style="font-size:16px;">${escapeHtml(rem.task)}</strong><br><span style="font-size:12px; color:#94a3b8;">${rem.displayTime} | ${rem.repeat === 'daily' ? 'Daily ♻️' : 'Once'}</span>
+            ${rem.doneToday ? '<div class="done-badge">DONE FOR TODAY</div>' : ''}</div>
+            <div class="card-buttons"><button class="test-btn" onclick="triggerReminderById(${rem.id})">TEST</button><button class="delete-btn" onclick="deleteReminder(${rem.id})">DELETE</button></div>
+          </div>
+        `).join('');
+      }
+    }
+    // Home preview with exact "Study Session / Workout" style from reference
+    const homeContainer = document.getElementById('homeRemindersList');
+    if(homeContainer) {
+      const activeRems = reminders.filter(r => !r.doneToday).slice(0, 4);
+      if(activeRems.length === 0) homeContainer.innerHTML = `<div style="background:#11151f; border-radius:28px; padding:30px; text-align:center; color:#6c7a95;">✨ No active reminders ✨</div>`;
+      else {
+        homeContainer.innerHTML = activeRems.map(rem => `
+          <div class="reminder-card-row">
+            <div class="reminder-left-content">
+              <div class="reminder-icon-bubble"><i class="fa-regular ${rem.iconClass || 'fa-bell'}" style="font-size:22px;"></i></div>
+              <div class="reminder-text"><h3>${escapeHtml(rem.task)}</h3><p>${rem.category || 'Reminder'}</p></div>
+            </div>
+            <div class="reminder-time-badge">${rem.displayTime}</div>
+          </div>
+        `).join('');
+      }
+    }
+    updateStatsUI();
+    saveReminders();
+  }
+
+  function saveReminders() { localStorage.setItem('mintReminders', JSON.stringify(reminders)); }
+  
+  function loadReminders() {
+    const stored = localStorage.getItem('mintReminders');
+    if(stored) {
+      try { reminders = JSON.parse(stored);
+        const today = new Date().toISOString().split('T')[0];
+        reminders.forEach(r => { if(r.lastResetDate !== today && r.repeat === 'daily') { r.doneToday = false; r.lastResetDate = today; } });
+        saveReminders();
+      } catch(e) {}
+    }
+    renderAllReminders();
+  }
+
+  function createReminder() {
+    const task = document.getElementById('taskName').value.trim();
+    if(!task) { alert("Enter task"); return; }
+    let hour = parseInt(document.getElementById('remHour').value);
+    const minute = document.getElementById('remMinute').value;
+    let ampm = document.getElementById('ampmSel').value;
+    let militaryHour = (ampm === "PM" && hour !==12) ? hour+12 : (ampm === "AM" && hour===12) ? 0 : hour;
+    const timeMilitary = `${militaryHour.toString().padStart(2,'0')}:${minute}`;
+    const displayTime = `${hour.toString().padStart(2,'0')}:${minute} ${ampm}`;
+    const selectedDate = document.getElementById('remDate').value;
+    const repeatMode = document.getElementById('repeatMode').value;
+    const loopEnabled = document.getElementById('voiceLoopSwitch').checked;
+    const voiceType = document.getElementById('voiceGender').value;
+    reminders.push({
+      id: Date.now(), task, timeMilitary, displayTime, date: selectedDate || null, repeat: repeatMode,
+      loop: loopEnabled, voicePref: voiceType, doneToday: false, lastResetDate: new Date().toISOString().split('T')[0],
+      iconClass: 'fa-clock', category: 'Smart AI'
+    });
+    saveReminders();
+    renderAllReminders();
+    document.getElementById('taskName').value = '';
+    document.getElementById('remDate').value = '';
+    document.getElementById('voiceLoopSwitch').checked = false;
+  }
+
+  function deleteReminder(id) { reminders = reminders.filter(r => r.id !== id); saveReminders(); renderAllReminders(); if(activeReminderId === id) dismissAll(); }
+  
+  function triggerReminderById(id) { const rem = reminders.find(r => r.id === id); if(rem) showPopupReminder(rem); }
+
+  function showPopupReminder(rem) {
+    if(activeReminderId) dismissAll();
+    activeReminderId = rem.id;
+    document.getElementById('popupMessage').innerText = rem.task;
+    document.getElementById('popupMint').style.display = 'flex';
+    const utterance = new SpeechSynthesisUtterance(rem.task);
+    utterance.rate = 0.95; utterance.pitch = rem.voicePref === 'female' ? 1.2 : 0.9;
+    synth.cancel(); synth.speak(utterance);
+    if(rem.loop) {
+      if(voiceLoopInterval) clearInterval(voiceLoopInterval);
+      voiceLoopInterval = setInterval(() => { if(activeReminderId === rem.id) synth.speak(new SpeechSynthesisUtterance(rem.task)); }, 4200);
+    }
+  }
+
+  function dismissAll() {
+    if(activeReminderId !== null && activeReminderId !== "tracker_mode") {
+      const rem = reminders.find(r => r.id === activeReminderId);
+      if(rem) {
+        if(rem.repeat === 'once') reminders = reminders.filter(r => r.id !== activeReminderId);
+        else { rem.doneToday = true; rem.lastResetDate = new Date().toISOString().split('T')[0]; }
+        saveReminders(); renderAllReminders();
+      }
+    } else if(activeReminderId === "tracker_mode") {
+      if(focusTimer) clearTimeout(focusTimer);
+      focusActive = false;
+      let prev = parseFloat(localStorage.getItem('mintFocusMinutes')||0);
+      localStorage.setItem('mintFocusMinutes', (prev + 0.5).toFixed(1));
+      updateStatsUI();
+      document.getElementById('trackerStatusMsg').innerText = 'Session closed.';
+    }
+    activeReminderId = null;
+    if(voiceLoopInterval) clearInterval(voiceLoopInterval);
+    synth.cancel();
+    document.getElementById('popupMint').style.display = 'none';
+    renderAllReminders();
+  }
+
+  function startFocusSession() {
+    if(focusActive) { alert("Focus already active!"); return; }
+    const durationSec = parseInt(document.getElementById('focusDuration').value);
+    const coachEnabled = document.getElementById('motivationToggle').checked;
+    if(focusTimer) clearTimeout(focusTimer);
+    document.getElementById('trackerStatusMsg').innerText = `🧘 Focus started (${durationSec >= 60 ? durationSec/60 + ' min' : durationSec+' sec'})`;
+    focusTimer = setTimeout(() => {
+      const coachMsg = coachEnabled ? "Excellent focus! Stay productive." : "Screen time limit reached!";
+      document.getElementById('popupMessage').innerText = coachMsg;
+      document.getElementById('popupMint').style.display = 'flex';
+      activeReminderId = "tracker_mode";
+      const speakMsg = new SpeechSynthesisUtterance(coachMsg);
+      synth.cancel(); synth.speak(speakMsg);
+      if(coachEnabled) {
+        if(voiceLoopInterval) clearInterval(voiceLoopInterval);
+        voiceLoopInterval = setInterval(() => { if(activeReminderId === "tracker_mode") synth.speak(new SpeechSynthesisUtterance(coachMsg)); }, 5000);
+      }
+      let focusHrs = parseFloat(localStorage.getItem('mintFocusMinutes')||0);
+      focusHrs += durationSec/3600;
+      localStorage.setItem('mintFocusMinutes', focusHrs.toFixed(1));
+      updateStatsUI();
+      focusActive = false;
+    }, durationSec * 1000);
+    focusActive = true;
+  }
+
+  // realtime reminder checker at midnight + per minute
+  setInterval(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    let changed = false;
+    reminders.forEach(r => { if(r.repeat === 'daily' && r.lastResetDate !== todayStr) { r.doneToday = false; r.lastResetDate = todayStr; changed = true; } });
+    if(changed) { saveReminders(); renderAllReminders(); }
+    const currentTimeMil = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    reminders.forEach(rem => {
+      if(!rem.doneToday && rem.timeMilitary === currentTimeMil && activeReminderId === null) {
+        if(!rem.date || rem.date === todayStr) showPopupReminder(rem);
+      }
+    });
+  }, 1000);
+
+  function showPage(pageId, navElement) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if(navElement) navElement.classList.add('active');
+    if(pageId === 'homePage') renderAllReminders();
+    if(pageId === 'remPage') renderAllReminders();
+    updateStatsUI();
+  }
+
+  window.showPage = showPage; window.createReminder = createReminder; window.deleteReminder = deleteReminder;
+  window.triggerReminderById = triggerReminderById; window.startFocusSession = startFocusSession;
+  window.dismissAll = dismissAll;
+  loadReminders();
+  setInterval(() => updateStatsUI(), 3000);
+</script>
+</body>
+</html>
